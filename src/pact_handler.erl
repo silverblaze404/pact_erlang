@@ -12,7 +12,7 @@
 
 % Public API to start the server
 start_pact(PactRef) ->
-    gen_server:start_link({local, {PactRef, ?MODULE}}, ?MODULE, #server_state{pact_ref = PactRef}).
+    gen_server:start_link({local, {PactRef, ?MODULE}}, ?MODULE, #server_state{pact_ref = PactRef}, []).
 
 % Public API to create an interaction
 create_interaction(PactRef, Interaction) ->
