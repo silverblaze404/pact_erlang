@@ -44,7 +44,7 @@ handle_call(get_interaction, _From, State) ->
 
 handle_call({set_mock_server_port, Port}, _From, State) ->
     NewState = State#server_state{mock_server_port=Port},
-    {reply, NewState, State};
+    {reply, ok, NewState};
 
 handle_call(get_mock_server_port, _From, State) ->
     {reply, State#server_state.mock_server_port, State};
