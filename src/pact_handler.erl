@@ -16,19 +16,19 @@ start_pact(PactRef) ->
 
 % Public API to create an interaction
 create_interaction(PactRef, Interaction) ->
-    gen_server:call({PactRef, ?MODULE}, {create_interaction, Interaction}).
+    gen_server:call({global, {PactRef, ?MODULE}}, {create_interaction, Interaction}).
 
 % Public API to retrieve all interactions stored in the state
 get_interaction(PactRef) ->
-    gen_server:call({PactRef, ?MODULE}, get_interaction).
+    gen_server:call({global, {PactRef, ?MODULE}}, get_interaction).
 
 % Public API to set the mock server port when the server is started
 set_mock_server_port(PactRef, Port) ->
-    gen_server:call({PactRef, ?MODULE}, {set_mock_server_port, Port}).
+    gen_server:call({global, {PactRef, ?MODULE}}, {set_mock_server_port, Port}).
 
 % Public API to set the mock server port when the server is started
 get_mock_server_port(PactRef) ->
-    gen_server:call({PactRef, ?MODULE}, get_mock_server_port).
+    gen_server:call({global, {PactRef, ?MODULE}}, get_mock_server_port).
 
 %% gen_server callbacks
 
