@@ -1,12 +1,12 @@
 -module(pact_handler).
 -behaviour(gen_server).
 
--export([start_pact/1, create_interaction/2, get_interaction/1, set_mock_server_port/2, get_mock_server_port/1]).
+-export([start_pact/1, create_interaction/3, get_interaction/1, set_mock_server_port/2, get_mock_server_port/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record(server_state, {
     pact_ref,
-    interaction = #{},
+    interaction = {undefined, #{}},
     mock_server_port = undefined
 }).
 
@@ -15,8 +15,8 @@ start_pact(PactRef) ->
     gen_server:start({global, {PactRef, ?MODULE}}, ?MODULE, #server_state{pact_ref = PactRef}, []).
 
 % Public API to create an interaction
-create_interaction(PactRef, Interaction) ->
-    gen_server:call({global, {PactRef, ?MODULE}}, {create_interaction, Interaction}).
+create_interaction(PactRef, InteractionRef, Interaction) ->
+    gen_server:call({global, {PactRef, ?MODULE}}, {create_interaction, InteractionRef, Interaction}).
 
 % Public API to retrieve all interactions stored in the state
 get_interaction(PactRef) ->
@@ -35,8 +35,8 @@ get_mock_server_port(PactRef) ->
 init(#server_state{pact_ref = PactRef}) ->
     {ok, #server_state{pact_ref = PactRef}}.
 
-handle_call({create_interaction, Interaction}, _From, State) ->
-    NewState = State#server_state{interaction = Interaction},
+handle_call({create_interaction, InteractionRef, Interaction}, _From, State) ->
+    NewState = State#server_state{interaction = {InteractionRef, Interaction}},
     {reply, ok, NewState};
 
 handle_call(get_interaction, _From, State) ->

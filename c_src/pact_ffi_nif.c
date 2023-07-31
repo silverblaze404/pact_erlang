@@ -446,6 +446,17 @@ static ERL_NIF_TERM erl_pactffi_with_query_parameter_v2(ErlNifEnv *env, int argc
     }
 }
 
+static ERL_NIF_TERM erl_pactffi_pact_interaction_delete(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
+{
+    if (!enif_is_number(env, argv[0]))
+    {
+        return enif_make_badarg(env);
+    }
+    InteractionHandle interactionHandle = convert_erl_int_to_c_int(env, argv[0]);
+    pactffi_pact_interaction_delete(interactionHandle);
+    return enif_make_atom(env, "ok");
+}
+
 static ErlNifFunc nif_funcs[] =
     {
         {"erl_pactffi_version", 0, erl_pactffi_version},
@@ -467,7 +478,8 @@ static ErlNifFunc nif_funcs[] =
         {"erl_pactffi_cleanup_mock_server", 1, erl_pactffi_cleanup_mock_server},
         {"erl_pactffi_free_pact_handle", 1, erl_pactffi_free_pact_handle},
         {"erl_pactffi_with_query_parameter_v2", 4, erl_pactffi_with_query_parameter_v2},
-        {"erl_pactffi_given", 2, erl_pactffi_given}
+        {"erl_pactffi_given", 2, erl_pactffi_given},
+        {"erl_pactffi_pact_interaction_delete", 1, erl_pactffi_pact_interaction_delete}
     };
 
 ERL_NIF_INIT(pact_ffi_nif, nif_funcs, NULL, NULL, NULL, NULL)

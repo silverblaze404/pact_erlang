@@ -8,9 +8,9 @@ v4(Consumer, Producer) ->
     PactRef.
 
 create_interaction(PactRef, Interaction) ->
-    ok = pact_handler:create_interaction(PactRef, Interaction),
     GivenState = maps:get(upon_receiving, Interaction, <<"">>),
     InteractionRef = pact_ffi_helper:create_new_interaction(PactRef, GivenState),
+    ok = pact_handler:create_interaction(PactRef, InteractionRef, Interaction),
     RequestDetails = maps:get(with_request, Interaction, #{}),
     ok = insert_request_details(InteractionRef, RequestDetails),
     ResponseDetails = maps:get(will_respond_with, Interaction ,#{}),
@@ -24,6 +24,8 @@ create_interaction(PactRef, Interaction) ->
 verify_interaction(PactRef) ->
     MockServerPort = pact_handler:get_mock_server_port(PactRef),
     {ok, matched} = pact_ffi_helper:verify(MockServerPort),
+    {InteractionRef, _} = pact_handler:get_interaction(PactRef),
+    ok = pact_ffi_helper:cleanup_interaction(InteractionRef),
     ok = pact_ffi_helper:cleanup_mock_server(MockServerPort).
 
 insert_request_details(InteractionRef, RequestDetails) ->
