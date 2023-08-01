@@ -3,11 +3,13 @@
 -export([v4/2, create_interaction/2, verify_interaction/1]).
 
 v4(Consumer, Producer) ->
-    PactRef = pact_ffi_helper:create_new_pact(Consumer, Producer),
-    pact_handler:start_pact(PactRef, Consumer, Producer),
-    PactRef.
+    {ok, PactPid} = pact_handler:start_pact(Consumer, Producer),
+    PactPid.
 
-create_interaction(PactRef, Interaction) ->
+create_interaction(PactPid, Interaction) ->
+    {Consumer, Producer} = pact_handler:get_consumer_producer(PactPid),
+    PactRef = pact_ffi_helper:create_new_pact(Consumer, Producer),
+    ok = pact_handler:set_pact_ref(PactRef),
     GivenState = maps:get(upon_receiving, Interaction, <<"">>),
     InteractionRef = pact_ffi_helper:create_new_interaction(PactRef, GivenState),
     ok = pact_handler:create_interaction(PactRef, InteractionRef, Interaction),
@@ -21,11 +23,11 @@ create_interaction(PactRef, Interaction) ->
     ok = pact_handler:set_mock_server_port(PactRef, MockServerPort),
     {ok, MockServerPort}.
 
-verify_interaction(PactRef) ->
+verify_interaction(PactPid) ->
+    PactRef = pact_handler:get_pact_ref(PactPid),
     MockServerPort = pact_handler:get_mock_server_port(PactRef),
     {ok, matched} = pact_ffi_helper:verify(MockServerPort),
     pact_ffi_helper:cleanup_pact(PactRef),
-    pact_handler:stop(PactRef),
     ok = pact_ffi_helper:cleanup_mock_server(MockServerPort).
 
 insert_request_details(InteractionRef, RequestDetails) ->

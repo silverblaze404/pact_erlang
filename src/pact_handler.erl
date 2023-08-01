@@ -1,34 +1,59 @@
 -module(pact_handler).
 -behaviour(gen_server).
 
--export([start_pact/1, create_interaction/3, get_interaction/1, set_mock_server_port/2, get_mock_server_port/1, stop/1]).
+-export([
+    start_pact/2,
+    create_interaction/3, get_interaction/1,
+    set_mock_server_port/2, get_mock_server_port/1,
+    stop/1,
+    get_pact_ref/1, set_pact_ref/2,
+    get_consumer_producer/1
+]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record(server_state, {
-    pact_ref,
+    consumer,
+    producer,
+    pact_ref = undefined,
     interaction = {undefined, #{}},
     mock_server_port = undefined
 }).
 
 % Public API to start the server
-start_pact(PactRef) ->
-    gen_server:start({global, {PactRef, ?MODULE}}, ?MODULE, #server_state{pact_ref = PactRef}, []).
+start_pact(Consumer, Producer) ->
+    gen_server:start({global, {?MODULE, Consumer, Producer}}, ?MODULE,
+        #server_state{
+            consumer = Consumer,
+            producer = Producer
+        },
+        []
+    ).
+
+get_consumer_producer(PactPid) ->
+    gen_server:call(PactPid, get_consumer_producer).
+
+get_pact_ref(PactPid) ->
+    gen_server:call(PactPid, get_pact_ref).
+
+set_pact_ref(PactPid, PactRef) ->
+    gen_server:call(PactPid, {set_pact_ref, PactRef}).
 
 % Public API to create an interaction
-create_interaction(PactRef, InteractionRef, Interaction) ->
-    gen_server:call({global, {PactRef, ?MODULE}}, {create_interaction, InteractionRef, Interaction}).
+create_interaction(PactPid, InteractionRef, Interaction) ->
+    gen_server:call(PactPid, {create_interaction, InteractionRef, Interaction}).
 
 % Public API to retrieve all interactions stored in the state
-get_interaction(PactRef) ->
-    gen_server:call({global, {PactRef, ?MODULE}}, get_interaction).
+get_interaction(PactPid) ->
+    gen_server:call(PactPid, get_interaction).
 
 % Public API to set the mock server port when the server is started
-set_mock_server_port(PactRef, Port) ->
-    gen_server:call({global, {PactRef, ?MODULE}}, {set_mock_server_port, Port}).
+set_mock_server_port(PactPid, Port) ->
+    gen_server:call(PactPid, {set_mock_server_port, Port}).
 
 % Public API to set the mock server port when the server is started
-get_mock_server_port(PactRef) ->
-    gen_server:call({global, {PactRef, ?MODULE}}, get_mock_server_port).
+get_mock_server_port(PactPid) ->
+    gen_server:call(PactPid, get_mock_server_port).
+
 
 %% gen_server callbacks
 
@@ -49,6 +74,16 @@ handle_call({set_mock_server_port, Port}, _From, State) ->
 handle_call(get_mock_server_port, _From, State) ->
     {reply, State#server_state.mock_server_port, State};
 
+handle_call(get_pact_ref, _From, State) ->
+    {reply, State#server_state.pact_ref, State};
+
+handle_call({set_pact_ref, PactRef}, _From, State) ->
+    NewState = State#server_state{pact_ref=PactRef},
+    {reply, ok, NewState};
+
+handle_call(get_consumer_producer, _From, State) ->
+    {reply, {State#server_state.consumer, State#server_state.producer}, State};
+
 handle_call(_Request, _From, State) ->
     {reply, unknown_request, State}.
 
@@ -64,5 +99,5 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-stop(PactRef) ->
-    gen_server:stop({global, {PactRef, ?MODULE}}).
+stop(PactPid) ->
+    gen_server:stop(PactPid).
