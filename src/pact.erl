@@ -9,7 +9,7 @@ v4(Consumer, Producer) ->
 create_interaction(PactPid, Interaction) ->
     {Consumer, Producer} = pact_handler:get_consumer_producer(PactPid),
     PactRef = pact_ffi_helper:create_new_pact(Consumer, Producer),
-    ok = pact_handler:set_pact_ref(PactRef),
+    ok = pact_handler:set_pact_ref(PactPid, PactRef),
     GivenState = maps:get(upon_receiving, Interaction, <<"">>),
     InteractionRef = pact_ffi_helper:create_new_interaction(PactRef, GivenState),
     ok = pact_handler:create_interaction(PactRef, InteractionRef, Interaction),
