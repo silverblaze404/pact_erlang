@@ -57,8 +57,8 @@ get_mock_server_port(PactPid) ->
 
 %% gen_server callbacks
 
-init(#server_state{pact_ref = PactRef}) ->
-    {ok, #server_state{pact_ref = PactRef}}.
+init(#server_state{consumer = Consumer, producer = Producer}) ->
+    {ok, #server_state{consumer = Consumer, producer = Producer}}.
 
 handle_call({create_interaction, InteractionRef, Interaction}, _From, State) ->
     NewState = State#server_state{interaction = {InteractionRef, Interaction}},
