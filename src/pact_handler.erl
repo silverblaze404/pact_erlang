@@ -1,7 +1,7 @@
 -module(pact_handler).
 -behaviour(gen_server).
 
--export([start_pact/1, create_interaction/3, get_interaction/1, set_mock_server_port/2, get_mock_server_port/1]).
+-export([start_pact/1, create_interaction/3, get_interaction/1, set_mock_server_port/2, get_mock_server_port/1, stop/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record(server_state, {
@@ -63,3 +63,6 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
+
+stop(PactRef) ->
+    gen_server:stop({global, {PactRef, ?MODULE}}).

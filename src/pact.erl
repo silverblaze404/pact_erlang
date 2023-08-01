@@ -4,7 +4,7 @@
 
 v4(Consumer, Producer) ->
     PactRef = pact_ffi_helper:create_new_pact(Consumer, Producer),
-    pact_handler:start_pact(PactRef),
+    pact_handler:start_pact(PactRef, Consumer, Producer),
     PactRef.
 
 create_interaction(PactRef, Interaction) ->
@@ -24,8 +24,8 @@ create_interaction(PactRef, Interaction) ->
 verify_interaction(PactRef) ->
     MockServerPort = pact_handler:get_mock_server_port(PactRef),
     {ok, matched} = pact_ffi_helper:verify(MockServerPort),
-    {InteractionRef, _} = pact_handler:get_interaction(PactRef),
-    ok = pact_ffi_helper:cleanup_interaction(InteractionRef),
+    pact_ffi_helper:cleanup_pact(PactRef),
+    pact_handler:stop(PactRef),
     ok = pact_ffi_helper:cleanup_mock_server(MockServerPort).
 
 insert_request_details(InteractionRef, RequestDetails) ->
