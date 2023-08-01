@@ -12,7 +12,7 @@ create_interaction(PactPid, Interaction) ->
     ok = pact_handler:set_pact_ref(PactPid, PactRef),
     GivenState = maps:get(upon_receiving, Interaction, <<"">>),
     InteractionRef = pact_ffi_helper:create_new_interaction(PactRef, GivenState),
-    ok = pact_handler:create_interaction(PactRef, InteractionRef, Interaction),
+    ok = pact_handler:create_interaction(PactPid, InteractionRef, Interaction),
     RequestDetails = maps:get(with_request, Interaction, #{}),
     ok = insert_request_details(InteractionRef, RequestDetails),
     ResponseDetails = maps:get(will_respond_with, Interaction ,#{}),
@@ -20,12 +20,12 @@ create_interaction(PactPid, Interaction) ->
     MockServerPort = pact_ffi_helper:create_mock_server_for_transport(
         PactRef, <<"127.0.0.1">>, 0, <<"http">>
     ),
-    ok = pact_handler:set_mock_server_port(PactRef, MockServerPort),
+    ok = pact_handler:set_mock_server_port(PactPid, MockServerPort),
     {ok, MockServerPort}.
 
 verify_interaction(PactPid) ->
     PactRef = pact_handler:get_pact_ref(PactPid),
-    MockServerPort = pact_handler:get_mock_server_port(PactRef),
+    MockServerPort = pact_handler:get_mock_server_port(PactPid),
     {ok, matched} = pact_ffi_helper:verify(MockServerPort),
     pact_ffi_helper:cleanup_pact(PactRef),
     ok = pact_ffi_helper:cleanup_mock_server(MockServerPort).
