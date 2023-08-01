@@ -1,6 +1,6 @@
 -module(pact).
 
--export([v4/2, create_interaction/2, verify_interaction/1]).
+-export([v4/2, create_interaction/2, verify_interaction/1, write_pact_file/2]).
 
 v4(Consumer, Producer) ->
     {ok, PactPid} = pact_handler:start_pact(Consumer, Producer),
@@ -29,6 +29,10 @@ verify_interaction(PactPid) ->
     {ok, matched} = pact_ffi_helper:verify(MockServerPort),
     pact_ffi_helper:cleanup_pact(PactRef),
     ok = pact_ffi_helper:cleanup_mock_server(MockServerPort).
+
+write_pact_file(PactPid, PactFilePath) ->
+    PactRef = pact_handler:get_pact_ref(PactPid),
+    pact_ffi_helper:write_pact_file(PactRef, PactFilePath).
 
 insert_request_details(InteractionRef, RequestDetails) ->
     ReqMethod = maps:get(method, RequestDetails),
