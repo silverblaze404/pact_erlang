@@ -68,7 +68,9 @@ insert_request_details(InteractionRef, RequestDetails) ->
     case ReqBody of
         undefined -> ok;
         _ ->
-            pact_ffi_interface:with_request_body(InteractionRef, <<"application/json">>, ReqBody)
+            Body = maps:get(body, ReqBody, <<"">>),
+            ContentType = maps:get(content_type, ReqBody, <<"">>),
+            pact_ffi_interface:with_request_body(InteractionRef, ContentType, Body)
     end,
     ReqQueryParams = maps:get(query_params, RequestDetails, undefined),
     case ReqQueryParams of
