@@ -109,6 +109,8 @@ insert_response_details(InteractionRef, ResponseDetails) ->
     case ResBody of
         undefined -> ok;
         _ ->
-            pact_ffi_interface:with_response_body(InteractionRef, <<"application/json">>, ResBody)
+            Body = maps:get(body, ResBody, <<"">>),
+            ContentType = maps:get(content_type, ResBody, <<"">>),
+            pact_ffi_interface:with_response_body(InteractionRef, ContentType, Body)
     end,
     ok.
