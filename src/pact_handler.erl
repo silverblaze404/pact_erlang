@@ -11,7 +11,7 @@
 ]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--record(server_state, {
+-record(pact_state, {
     consumer,
     producer,
     pact_ref = undefined,
@@ -22,7 +22,7 @@
 % Public API to start the server
 start_pact(Consumer, Producer) ->
     gen_server:start({global, {?MODULE, Consumer, Producer}}, ?MODULE,
-        #server_state{
+        #pact_state{
             consumer = Consumer,
             producer = Producer
         },
@@ -57,32 +57,32 @@ get_mock_server_port(PactPid) ->
 
 %% gen_server callbacks
 
-init(#server_state{consumer = Consumer, producer = Producer}) ->
-    {ok, #server_state{consumer = Consumer, producer = Producer}}.
+init(#pact_state{consumer = Consumer, producer = Producer}) ->
+    {ok, #pact_state{consumer = Consumer, producer = Producer}}.
 
 handle_call({create_interaction, InteractionRef, Interaction}, _From, State) ->
-    NewState = State#server_state{interaction = {InteractionRef, Interaction}},
+    NewState = State#pact_state{interaction = {InteractionRef, Interaction}},
     {reply, ok, NewState};
 
 handle_call(get_interaction, _From, State) ->
-    {reply, State#server_state.interaction, State};
+    {reply, State#pact_state.interaction, State};
 
 handle_call({set_mock_server_port, Port}, _From, State) ->
-    NewState = State#server_state{mock_server_port=Port},
+    NewState = State#pact_state{mock_server_port=Port},
     {reply, ok, NewState};
 
 handle_call(get_mock_server_port, _From, State) ->
-    {reply, State#server_state.mock_server_port, State};
+    {reply, State#pact_state.mock_server_port, State};
 
 handle_call(get_pact_ref, _From, State) ->
-    {reply, State#server_state.pact_ref, State};
+    {reply, State#pact_state.pact_ref, State};
 
 handle_call({set_pact_ref, PactRef}, _From, State) ->
-    NewState = State#server_state{pact_ref=PactRef},
+    NewState = State#pact_state{pact_ref=PactRef},
     {reply, ok, NewState};
 
 handle_call(get_consumer_producer, _From, State) ->
-    {reply, {State#server_state.consumer, State#server_state.producer}, State};
+    {reply, {State#pact_state.consumer, State#pact_state.producer}, State};
 
 handle_call(_Request, _From, State) ->
     {reply, unknown_request, State}.

@@ -1,4 +1,4 @@
--module(pact_ffi_helper).
+-module(pact_ffi_interface).
 
 %% Pact functions
 -export([
